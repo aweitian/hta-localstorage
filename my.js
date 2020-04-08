@@ -44,3 +44,6 @@
 	}
 	window[ns] = ls;
 })('ls');
+
+//ls.setItem('foo','bar');
+//alert(ls.getItem('foo'))
