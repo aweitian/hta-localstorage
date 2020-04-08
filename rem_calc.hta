@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<script>
+(function (ns) {
+	var storage = {}
+	var shell = new ActiveXObject('WScript.Shell')
+	var storageFile = shell.ExpandEnvironmentStrings('%USERPROFILE%') + '\\.hta-localstorage'
+
+	var fso = new ActiveXObject('Scripting.FileSystemObject')
+	if (fso.FileExists(storageFile)) {
+	  var fp = fso.OpenTextFile(storageFile, 1)
+	  var json = fp.ReadAll()
+	  try {
+	    storage = JSON.parse(json)
+	  }
+	  catch (e) {
+	    // Tampered with? Ignore invalid JSON
+	  }
+	  finally {
+	    fp.Close()
+	  }
+	}
+
+	var save = function () {
+	  var fp = fso.OpenTextFile(storageFile, 2, true)
+	  fp.Write(JSON.stringify(storage))
+	  fp.Close()
+	}
+	var ls = {};
+	ls.getItem = function (key) {
+		return storage[key] || undefined
+	}
+
+	ls.setItem = function (key, value) {
+		storage[key] = String(value)
+		save()
+	}
+
+	ls.removeItem = function (key) {
+		delete storage[key]
+		save()
+	}
+
+	ls.clear = function () {
+		storage = {}
+		save()
+	}
+	window[ns] = ls;
+})('ls');
+</script>
+
+
+<input name=w id=w750 type=radio><label for=w750>750</label>
+<input name=w id=w640 type=radio><label for=w640>640</label>
+<input id=i>
+<div id=o></div>
+
+<script>
+function calc()
+{
+	try{
+		var input = i.value;
+		ls.setItem('i',input);
+		if (w750.checked) {
+			ls.setItem('w750','yes');
+			o.innerHTML = input / 20;
+		} else {
+			ls.setItem('w750','no');
+			o.innerHTML = input / 23.5;
+		}
+	}catch(e){}
+}
+document.onkeyup = calc;
+w750.onclick = calc;
+w640.onclick = calc;
+
+if(ls.getItem('w750') == 'yes')
+{
+	w750.checked = true;
+} else {
+	w640.checked = true;
+}
+i.value = ls.getItem('i');
+</script>
+
+
+
